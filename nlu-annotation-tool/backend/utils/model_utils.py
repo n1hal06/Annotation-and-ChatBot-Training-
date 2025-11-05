@@ -7,6 +7,7 @@ import shutil
 import subprocess
 from glob import glob
 from typing import List
+from datetime import datetime
 
 # ---------- spaCy trainer (your existing function kept) ----------
 def train_spacy_model(base_dir: str) -> str:
@@ -49,6 +50,97 @@ def train_spacy_model(base_dir: str) -> str:
                 continue
         if text:
             training_data.append((text, {'entities': spacy_ents}))
+
+def save_rasa_model_metadata(model_path: str, training_data: dict, model_performance: dict = None) -> None:
+    """
+    Save metadata for a trained Rasa model
+    Args:
+        model_path: Path to the trained Rasa model
+        training_data: Dictionary containing training data statistics
+        model_performance: Dictionary containing model performance metrics (optional)
+    """
+    metadata = {
+        "model_info": {
+            "created_at": datetime.now().isoformat(),
+            "model_path": model_path,
+            "model_size": os.path.getsize(model_path) if os.path.exists(model_path) else None,
+        },
+        "training_data": {
+            "num_intents": training_data.get("num_intents", 0),
+            "num_examples": training_data.get("num_examples", 0),
+            "intents": training_data.get("intents", []),
+            "entities": training_data.get("entities", [])
+        },
+        "training_timestamp": int(time.time())
+    }
+    
+    if model_performance:
+        metadata["model_performance"] = model_performance
+    
+    # Create metadata directory if it doesn't exist
+    metadata_dir = os.path.join(os.path.dirname(model_path), "metadata")
+    os.makedirs(metadata_dir, exist_ok=True)
+    
+    # Save metadata
+    metadata_path = os.path.join(metadata_dir, "model_metadata.json")
+    with open(metadata_path, 'w', encoding='utf-8') as f:
+        json.dump(metadata, f, indent=2)
+    
+    # Also save a copy with timestamp for version tracking
+    timestamp_metadata_path = os.path.join(
+        metadata_dir, 
+        f"model_metadata_{metadata['training_timestamp']}.json"
+    )
+    with open(timestamp_metadata_path, 'w', encoding='utf-8') as f:
+        json.dump(metadata, f, indent=2)
+
+def get_training_data_stats(nlu_data_path: str) -> dict:
+    """
+    Extract training data statistics from nlu.yml
+    Args:
+        nlu_data_path: Path to the nlu.yml file
+    Returns:
+        Dictionary containing training data statistics
+    """
+    try:
+        import yaml
+        with open(nlu_data_path, 'r', encoding='utf-8') as f:
+            nlu_data = yaml.safe_load(f)
+
+        intents = set()
+        entities = set()
+        examples_count = 0
+
+        for item in nlu_data.get('nlu', []):
+            if 'intent' in item:
+                intent_name = item['intent']
+                intents.add(intent_name)
+                examples = item.get('examples', '').split('\n')
+                examples_count += len([ex for ex in examples if ex.strip()])
+
+                # Extract entities from examples
+                for example in examples:
+                    if '[' in example and '](' in example:
+                        entity_matches = example.split('[')
+                        for match in entity_matches[1:]:
+                            if '](' in match:
+                                entity_type = match.split('](')[1].split(')')[0]
+                                entities.add(entity_type)
+
+        return {
+            "num_intents": len(intents),
+            "num_examples": examples_count,
+            "intents": list(intents),
+            "entities": list(entities)
+        }
+    except Exception as e:
+        print(f"Error getting training data stats: {str(e)}")
+        return {
+            "num_intents": 0,
+            "num_examples": 0,
+            "intents": [],
+            "entities": []
+        }
 
     if not training_data:
         raise RuntimeError('No training data available in annotations.json')
@@ -104,50 +196,63 @@ def annotations_to_rasa_nlu(annotations: List[dict], rasa_project_path: str) -> 
     annotations: list of {"text":..., "intent":..., "entities":[{"start":int,"end":int,"label":str}, ...]}
     Returns path to written nlu.yml
     """
-    import yaml
+    import yaml, os
+    
 
     data_dir = os.path.join(rasa_project_path, "data")
     os.makedirs(data_dir, exist_ok=True)
 
-    # Build examples grouped by intent (Rasa YAML format v2.0 simple)
     intents_map = {}
     for ann in annotations:
         text = ann.get("text", "").strip()
         if not text:
             continue
+
         intent = ann.get("intent", "unknown_intent")
         entities = ann.get("entities", [])
+
         if not entities:
-            # plain example
             example = text
         else:
-            # Create inline markup [entity_text](label) using span offsets
-            spans_sorted = sorted(entities, key=lambda e: int(e.get("start", 0)))
+            spans = sorted(entities, key=lambda e: int(e.get("start", 0)))
             marked = ""
             last = 0
-            for sp in spans_sorted:
-                s = int(sp.get("start", 0))
-                e = int(sp.get("end", 0))
-                label = sp.get("label", "entity")
+            for sp in spans:
+                s = int(sp["start"])
+                e = int(sp["end"])
+                label = sp["label"]
                 marked += text[last:s]
-                entity_text = text[s:e].replace("\n", " ")
-                marked += f"[{entity_text}]({label})"
+                marked += f"[{text[s:e]}]({label})"
                 last = e
             marked += text[last:]
             example = marked
+
         intents_map.setdefault(intent, []).append(example)
 
-    # Compose YAML
-    nlu_section = {"version": "2.0", "nlu": []}
+    nlu_section = {"version": "3.1", "nlu": []}
+
     for intent, examples in intents_map.items():
-        block = {"intent": intent, "examples": "|\n" + "\n".join(f"  - {ex}" for ex in examples)}
+        block = {
+            "intent": intent,
+            "examples": "\n".join(f"  - {ex}" for ex in examples)
+        }
+
         nlu_section["nlu"].append(block)
 
     target = os.path.join(data_dir, "nlu.yml")
-    with open(target, "w", encoding="utf-8") as fh:
-        yaml.dump(nlu_section, fh, sort_keys=False, allow_unicode=True)
+
+    with open(target, "w", encoding="utf-8") as f:
+        f.write('version: "3.1"\n')
+        f.write("nlu:\n")
+        for intent, examples in intents_map.items():
+            f.write(f"- intent: {intent}\n")
+            f.write("  examples: |\n")
+            for ex in examples:
+                f.write(f"    - {ex}\n")
+
 
     return target
+
 
 
 def _which_rasa_executable():
@@ -257,12 +362,29 @@ def train_rasa_model(base_dir: str) -> str:
     if not latest:
         raise RuntimeError("Rasa trained but no model file found in rasa_project/models. See log: " + log_file)
 
-    # copy to backend models dir
-    dest_name = f"model_v{ts}.tar.gz"
-    dest_path = os.path.join(dest_models_dir, dest_name)
-    shutil.copy2(latest, dest_path)
+    # copy models from rasa project's models/ into backend models dir (include any new/older models)
+    rasa_models = sorted(glob(os.path.join(rasa_project_path, "models", "*.tar.gz")), key=os.path.getmtime)
+    copied = []
+    for rm in rasa_models:
+        name = os.path.basename(rm)
+        dest = os.path.join(dest_models_dir, name)
+        try:
+            if not os.path.exists(dest):
+                shutil.copy2(rm, dest)
+            copied.append({
+                "file": name,
+                "original_model_path": rm,
+                "trained_at": int(os.path.getmtime(rm)),
+            })
+        except Exception:
+            # non-fatal: continue with others
+            continue
 
-    # write metadata
+    # ensure latest is present (guaranteed by copy above, but set dest_name/dest_path)
+    dest_name = os.path.basename(latest)
+    dest_path = os.path.join(dest_models_dir, dest_name)
+
+    # write metadata for the most-recent training run (keeps compatibility)
     metadata = {
         "info": {"name": "rasa_model", "trained_at": ts, "version": f"v{ts}"},
         "file": dest_name,
@@ -272,7 +394,89 @@ def train_rasa_model(base_dir: str) -> str:
         "rasa_stderr_snippet": stderr[:4000],
     }
     meta_file = os.path.join(dest_models_dir, "metadata.json")
-    with open(meta_file, "w", encoding="utf-8") as fh:
-        json.dump(metadata, fh, indent=2)
+    # Append new metadata entry instead of overwriting the file.
+    # Preserve backward compatibility: if an existing metadata.json is a dict,
+    # convert to a list of entries, then append the new one.
+    try:
+        if os.path.exists(meta_file):
+            with open(meta_file, 'r', encoding='utf-8') as fh:
+                existing_meta = json.load(fh)
+        else:
+            existing_meta = None
+    except Exception:
+        existing_meta = None
+
+    if isinstance(existing_meta, dict):
+        entries = [existing_meta]
+    elif isinstance(existing_meta, list):
+        entries = existing_meta
+    else:
+        entries = []
+
+    entries.append(metadata)
+
+    try:
+        with open(meta_file, 'w', encoding='utf-8') as fh:
+            json.dump(entries, fh, indent=2)
+    except Exception:
+        # If writing fails, fall back to writing single-object metadata to avoid losing latest info
+        try:
+            with open(meta_file, 'w', encoding='utf-8') as fh:
+                json.dump(metadata, fh, indent=2)
+        except Exception:
+            pass
+
+    # Maintain an index of all copied models with basic metadata
+    index_file = os.path.join(dest_models_dir, "models_index.json")
+    try:
+        if os.path.exists(index_file):
+            with open(index_file, 'r', encoding='utf-8') as idxf:
+                index = json.load(idxf) or []
+        else:
+            index = []
+    except Exception:
+        index = []
+
+    # Add/merge entries for copied models
+    existing_files = {e.get('file'): e for e in index if isinstance(e, dict) and e.get('file')}
+    for c in copied:
+        fname = c['file']
+        if fname in existing_files:
+            # update original path/trained_at if changed
+            existing_files[fname].setdefault('original_model_path', c.get('original_model_path'))
+            existing_files[fname].setdefault('trained_at', c.get('trained_at'))
+        else:
+            index.append({
+                'file': fname,
+                'original_model_path': c.get('original_model_path'),
+                'trained_at': c.get('trained_at')
+            })
+
+    # also ensure latest metadata entry is present (with training log and stdout/stderr)
+    latest_entry = {
+        'file': dest_name,
+        'original_model_path': latest,
+        'trained_at': ts,
+        'training_log': log_file,
+        'rasa_stdout_snippet': stdout[:4000],
+        'rasa_stderr_snippet': stderr[:4000]
+    }
+    # replace or append latest
+    replaced = False
+    for i, e in enumerate(index):
+        if e.get('file') == dest_name:
+            index[i] = {**e, **latest_entry}
+            replaced = True
+            break
+    if not replaced:
+        index.append(latest_entry)
+
+    # write back index
+    try:
+        with open(index_file, 'w', encoding='utf-8') as idxf:
+            json.dump(index, idxf, indent=2)
+    except Exception:
+        # non-fatal
+        pass
 
     return dest_path
