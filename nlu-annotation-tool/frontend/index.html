@@ -7,6 +7,17 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <script>
+      // Default landing: redirect to auth.html unless caller explicitly requests the annotation page
+      // Caller can append ?skip_landing=1 to load the annotation page directly (used after workspace select).
+      try {
+        if (!location.search.includes('skip_landing=1')) {
+          location.replace('auth.html');
+        }
+      } catch (e) {
+        // ignore
+      }
+    </script>
     <main class="container">
       <h1>NLU Annotation Tool</h1>
 

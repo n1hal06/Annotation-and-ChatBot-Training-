@@ -1,0 +1,5 @@
+body{font-family:Arial,Helvetica,sans-serif;background:#eef2fb;padding:40px}
+.card{max-width:760px;margin:40px auto;padding:20px;background:#fff;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.card input{padding:8px;width:60%;margin-right:8px}
+.card button{padding:8px 12px}
+.ws-item{padding:8px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between}

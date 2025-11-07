@@ -27,6 +27,23 @@ for f, default in [(ANNOTATIONS_FILE, []), (INTENTS_FILE, []), (ENTITIES_FILE, [
 app = Flask(__name__)
 CORS(app)
 
+# register new API blueprints (workspace, auth, training, models)
+try:
+    from api_blueprints.auth_api import bp as auth_bp
+    from api_blueprints.workspace_api import bp as ws_bp
+    from api_blueprints.train_api import bp as train_bp
+    from api_blueprints.models_api import bp as models_bp
+
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(ws_bp, url_prefix='/api')
+    app.register_blueprint(train_bp, url_prefix='/api')
+    app.register_blueprint(models_bp, url_prefix='/api')
+except Exception as e:
+    # non-fatal: if import fails keep legacy routes working, but print error for debugging
+    import traceback, sys
+    print('Failed to register API blueprints:', file=sys.stderr)
+    traceback.print_exc()
+
 
 def _load_annotations():
     with open(ANNOTATIONS_FILE, 'r', encoding='utf-8') as fh:

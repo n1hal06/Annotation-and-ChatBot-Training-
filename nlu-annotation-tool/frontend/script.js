@@ -1,5 +1,10 @@
 (function () {
-  const apiBase = 'http://127.0.0.1:5000';
+  const API = 'http://127.0.0.1:5000';
+  const TOKEN = localStorage.getItem('nlu_token');
+  const WORKSPACE = localStorage.getItem('nlu_workspace');
+  if (!TOKEN) window.location.href = 'auth.html';
+  if (!WORKSPACE) window.location.href = 'workspace.html';
+  const AUTH_HEADERS = { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
 
   const textInput = document.getElementById('text-input');
   const intentInput = document.getElementById('intent-input');
@@ -45,9 +50,11 @@
       entities: entities
     };
     try {
-      const resp = await fetch(apiBase + '/save_annotation', {
+      // workspace-aware annotation save
+      payload.workspace_id = WORKSPACE;
+      const resp = await fetch(API + '/api/annotations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: AUTH_HEADERS,
         body: JSON.stringify(payload)
       });
       const data = await resp.json();
@@ -67,10 +74,10 @@
 
   document.getElementById('train-spacy').addEventListener('click', async () => {
     try {
-      const resp = await fetch(apiBase + '/train_model', {
+      const resp = await fetch(API + '/api/train', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ backend: 'spacy' })
+        headers: AUTH_HEADERS,
+        body: JSON.stringify({ backend: 'spacy', workspace_id: WORKSPACE })
       });
       const data = await resp.json();
       if (resp.ok) {
@@ -85,10 +92,10 @@
 
   document.getElementById('train-rasa').addEventListener('click', async () => {
     try {
-      const resp = await fetch(apiBase + '/train_model', {
+      const resp = await fetch(API + '/api/train', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ backend: 'rasa' })
+        headers: AUTH_HEADERS,
+        body: JSON.stringify({ backend: 'rasa', workspace_id: WORKSPACE })
       });
       const data = await resp.json();
       if (resp.ok) {
@@ -105,7 +112,9 @@
 
   async function fetchModelMetadata() {
     try {
-      const resp = await fetch(apiBase + '/model_metadata');
+      const resp = await fetch(API + '/api/models?workspace_id=' + encodeURIComponent(WORKSPACE), {
+        headers: { 'Authorization': `Bearer ${TOKEN}` }
+      });
       const data = await resp.json();
       modelsMeta.textContent = JSON.stringify(data, null, 2);
     } catch (err) {
@@ -116,9 +125,9 @@
   document.getElementById('do-tokenize').addEventListener('click', async () => {
     const text = document.getElementById('tokenize-text').value || '';
     try {
-      const resp = await fetch(apiBase + '/tokenize', {
+      const resp = await fetch(API + '/tokenize', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: AUTH_HEADERS,
         body: JSON.stringify({ text })
       });
       const data = await resp.json();
