@@ -51,6 +51,50 @@ def train_spacy_model(base_dir: str) -> str:
         if text:
             training_data.append((text, {'entities': spacy_ents}))
 
+    if not training_data:
+        raise RuntimeError('No training data available in annotations.json')
+
+    # Create blank English model
+    nlp = spacy.blank('en')
+
+    if 'ner' not in nlp.pipe_names:
+        ner = nlp.add_pipe('ner')
+    else:
+        ner = nlp.get_pipe('ner')
+
+    for label in labels:
+        ner.add_label(label)
+
+    # Begin training
+    optimizer = nlp.begin_training()
+
+    # convert training data to spaCy Example objects for newer API
+    examples = []
+    for text, ann in training_data:
+        doc = nlp.make_doc(text)
+        examples.append(Example.from_dict(doc, ann))
+
+    # Train for a small number of epochs
+    for epoch in range(10):
+        random.shuffle(examples)
+        losses = {}
+        for example in examples:
+            nlp.update([example], sgd=optimizer, drop=0.35, losses=losses)
+        print(f'[model_utils] epoch {epoch+1}/10, losses={losses}')
+
+    # Save model
+    timestamp = int(time.time())
+    model_version_dir = os.path.join(spacy_dir, f'model_v{timestamp}')
+    os.makedirs(model_version_dir, exist_ok=True)
+    nlp.to_disk(model_version_dir)
+
+    # write metadata
+    meta = {'name': 'spacy_ner', 'version': f'v{timestamp}', 'trained_at': timestamp}
+    with open(os.path.join(spacy_dir, f'meta_v{timestamp}.json'), 'w', encoding='utf-8') as fh:
+        json.dump(meta, fh, indent=2)
+
+    return model_version_dir
+
 def save_rasa_model_metadata(model_path: str, training_data: dict, model_performance: dict = None) -> None:
     """
     Save metadata for a trained Rasa model
