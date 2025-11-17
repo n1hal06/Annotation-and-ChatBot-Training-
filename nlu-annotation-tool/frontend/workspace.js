@@ -18,8 +18,22 @@ async function load() {
       btn.addEventListener('click', (e) => {
           const id = e.target.getAttribute('data-ws');
           localStorage.setItem('nlu_workspace', id);
-          // include skip_landing to bypass the landing redirect in index.html
-          window.location.href = 'index.html?skip_landing=1';
+          // honor return_to param if present so user returns to the page that requested workspace
+          const params = new URLSearchParams(window.location.search);
+          const returnTo = params.get('return_to');
+          if (returnTo) {
+            // returnTo is expected to be an encoded path (e.g. admin_dashboard.html or admin_dashboard.html?foo=bar)
+            try {
+              const decoded = decodeURIComponent(returnTo);
+              window.location.href = decoded;
+            } catch (e) {
+              // fallback
+              window.location.href = 'index.html?skip_landing=1';
+            }
+          } else {
+            // default behavior: go to index and bypass landing
+            window.location.href = 'index.html?skip_landing=1';
+          }
       });
     });
   } catch (err) { alert('Failed to list workspaces: ' + err.message); }

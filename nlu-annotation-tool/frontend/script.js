@@ -81,7 +81,11 @@
       });
       const data = await resp.json();
       if (resp.ok) {
-        alert('spaCy training finished: ' + JSON.stringify(data));
+        alert('spaCy training finished!');
+        // Redirect to Module 4 Active Learning after successful training
+        setTimeout(() => {
+          window.location.href = 'active_learning.html';
+        }, 500);
       } else {
         alert('spaCy training failed: ' + (data.error || data.details || JSON.stringify(data)));
       }
@@ -99,7 +103,11 @@
       });
       const data = await resp.json();
       if (resp.ok) {
-        alert('Rasa training placeholder finished: ' + JSON.stringify(data));
+        alert('Rasa training finished!');
+        // Redirect to Module 4 Active Learning after successful training
+        setTimeout(() => {
+          window.location.href = 'active_learning.html';
+        }, 500);
       } else {
         alert('Rasa training failed: ' + (data.error || data.details || JSON.stringify(data)));
       }
@@ -109,6 +117,19 @@
   });
 
   document.getElementById('fetch-models').addEventListener('click', fetchModelMetadata);
+
+  // Navigation buttons
+  document.getElementById('go-to-active-learning').addEventListener('click', () => {
+    window.location.href = 'active_learning.html';
+  });
+
+  document.getElementById('go-to-admin-dashboard').addEventListener('click', () => {
+    window.location.href = 'admin_dashboard.html';
+  });
+
+  document.getElementById('go-to-deployment').addEventListener('click', () => {
+    window.location.href = 'deployment.html';
+  });
 
   async function fetchModelMetadata() {
     try {
