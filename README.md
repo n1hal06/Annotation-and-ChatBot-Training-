@@ -1,105 +1,96 @@
-NLU Training Platform + Rasa Chatbot
+# 🤖 NLU Training Platform + Rasa Chatbot
 
-A complete end-to-end system for NLU annotation, active learning, model training, workspace management, and chatbot interaction, combining:
+<div align="center">
 
-Flask – Backend API, authentication, workspace handling
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg)
+![Rasa](https://img.shields.io/badge/Rasa-3.0+-orange.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-Rasa NLU – Intent classification & entity extraction
+**A complete end-to-end system for NLU annotation, active learning, model training, workspace management, and chatbot interaction.**
 
-spaCy – Custom NER training
+[Features](#-features) • [Installation](#-installation) • [Usage](#-project-workflow) • [API](#-api-endpoints) • [Contributing](#-future-enhancements)
 
-Active Learning – Detect uncertain predictions & re-annotation
+</div>
 
-Admin Dashboard – Model health, stats, and workspace overview
+---
 
-Deployment Pipeline UI – Visual CI/CD simulation
+## 🎯 Overview
 
-Chatbot UI (E-commerce) – Interactive bot interface
+A production-ready platform that combines **Flask**, **Rasa NLU**, and **spaCy** to deliver a complete Natural Language Understanding pipeline. This system enables you to:
 
-This platform supports the full workflow:
-Annotate → Train → Review → Retrain → Deploy → Chat.
+- 🏗️ **Build**: Annotate training data with an intuitive web interface
+- 🧠 **Train**: Deploy Rasa and spaCy models with version control
+- 📊 **Monitor**: Track model performance through an admin dashboard
+- 🔄 **Improve**: Leverage active learning to enhance dataset quality
+- 💬 **Deploy**: Interact with your chatbot through a custom UI
 
-📌 Table of Contents
+### 🔧 Tech Stack
 
-Overview
+| Component | Technology |
+|-----------|-----------|
+| Backend API | Flask |
+| NLU Engine | Rasa NLU |
+| Entity Recognition | spaCy |
+| Authentication | JWT |
+| Active Learning | Custom Algorithm |
+| Frontend | HTML, CSS, JavaScript |
 
-Features
+### 🚀 Workflow Pipeline
 
-Project Workflow
+```
+📝 Annotate → 🏋️ Train → 📈 Review → 🔄 Retrain → 🚀 Deploy → 💬 Chat
+```
 
-Project Structure
+---
 
-Installation
+## 📌 Table of Contents
 
-How It Works
+- [Features](#-features)
+- [Project Workflow](#-project-workflow)
+- [Project Structure](#-project-structure)
+- [Installation](#-installation)
+- [API Endpoints](#-api-endpoints)
+- [Future Enhancements](#-future-enhancements)
+- [License](#-license)
 
-Active Learning Cycle
+---
 
-Chatbot UI (E-Commerce)
+## ✨ Features
+---
 
-API Endpoints
+## ✨ Features
 
-Screenshots
+### 1. 🔐 Authentication (JWT-Based)
 
-Future Enhancements
+- ✅ User registration & login
+- ✅ Secure JWT tokens
+- ✅ Redirects to login if unauthenticated
+- ✅ Automatic session validation
 
-Overview
+### 2. 🗂️ Workspace Management
 
-The platform provides a multi-workspace NLU training system where each workspace maintains its own:
+Each workspace stores its own isolated data:
 
-annotations.json
+- 📄 Training dataset
+- 🤖 Trained model versions
+- 📊 Metadata history
+- 🔍 Uncertain samples for active learning
 
-NLU training data
+> **Multi-project support**: Manage multiple NLU projects independently!
 
-Rasa and spaCy model versions
+### 3. ✍️ Annotation Tool
 
-Uncertain sample set
+A full-featured annotation interface:
 
-Metadata files
+- 📝 Enter text
+- 🎯 Add intent labels
+- 🏷️ Add entity spans with `[text](ENTITY)` syntax
+- 👁️ Preview JSON format
+- 💾 Save annotations to selected workspace
 
-With this, you can manage multiple projects independently.
-
-Features
-1. 🔐 Authentication (JWT-Based)
-
-User registration & login
-
-Secure JWT tokens
-
-Redirects to login if unauthenticated
-
-Automatic session validation
-
-2. 🗂 Workspace Management
-
-Each workspace stores its own:
-
-Training dataset
-
-Trained model versions
-
-Metadata history
-
-Uncertain samples for active learning
-
-Workspaces allow project isolation.
-
-3. ✍️ Annotation Tool
-
-A full annotation interface where users can:
-
-Enter text
-
-Add intent
-
-Add entity spans ([text](ENTITY))
-
-Preview JSON format
-
-Save annotations to selected workspace
-
-Example annotation format:
-
+**Example annotation format:**
+```json
 {
   "text": "Book a table at Leela Palace",
   "intent": "book_restaurant",
@@ -107,100 +98,97 @@ Example annotation format:
     { "start": 17, "end": 29, "label": "RESTAURANT" }
   ]
 }
+```
 
-4. 🤖 Model Training
+### 4. 🤖 Model Training
 
-Supports training of:
+#### spaCy NER
+- Custom entity training
+- Models stored under `models/spacy_model/`
 
-spaCy NER
+#### Rasa NLU
+- Converts annotations → `nlu.yml`
+- Runs `rasa train nlu`
+- Saves `.tar.gz` model files
+- Generates metadata per version
 
-Custom entity training
+### 5. 🔁 Active Learning Module
 
-Stores models under models/spacy_model/
+Intelligent model improvement:
 
-Rasa NLU
+- 🎯 Detects low-confidence predictions (< 0.6)
+- 💾 Stores them in `uncertain_samples.json`
+- ✏️ Allows user to re-annotate and retrain
+- 🔄 Integrates seamlessly with existing training pipeline
 
-Converts annotations → nlu.yml
+> **Smart Learning**: Active learning improves your dataset automatically over time!
 
-Runs rasa train nlu
+### 6. 🛠️ Admin Dashboard
 
-Saves .tar.gz model files
+Comprehensive project overview:
 
-Generates metadata per version
+| Metric | Description |
+|--------|-------------|
+| 📊 Total Annotations | Number of labeled samples |
+| 🏷️ Entity Types | Unique entity labels |
+| 🎯 Intent List | All intent categories |
+| 🤖 Model Versions | Training history |
+| ⏰ Last Trained | Most recent model update |
+| 👥 User Accounts | Registered users |
 
-5. 🔁 Active Learning Module
+**Quick Actions:**
+- 🔄 Retrain spaCy
+- 🔄 Retrain Rasa
+- 🔄 Retrain both models
+- 🎓 Open Active Learning module
 
-Detects low-confidence predictions (< 0.6):
+### 7. 🚀 Deployment Pipeline UI
 
-Stores them in uncertain_samples.json
+Visual representation of deployment stages:
 
-Allows user to re-annotate and retrain
+```
+🐳 Docker Build → 📦 Container Registry → ☁️ Cloud Deploy → 🌐 Live Service
+```
 
-Integrates seamlessly with existing training pipeline
+> *All buttons are placeholders for future CI/CD integration.*
 
-Active learning improves the dataset automatically over time.
+### 8. 🛒 Custom Chatbot UI (E-commerce)
 
-6. 🛠 Admin Dashboard
+Interactive chat interface with:
 
-Shows:
+- 💬 Real-time chat interface
+- 📦 Order-tracking intent
+- 🛍️ Product suggestion intents
+- 🤷 Fallback handling
 
-Total annotations
-
-Entity types
-
-Intent list
-
-Model versions
-
-Last trained time
-
-Workspace-specific statistics
-
-User accounts
-
-Includes actions:
-
-Retrain spaCy
-
-Retrain Rasa
-
-Retrain both models
-
-Open Active Learning module
-
-7. 🚀 Deployment Pipeline UI
-
-A visual representation of deployment steps:
-
-Docker Build → Container Registry → Cloud Deploy → Live Service
-
-
-All buttons are placeholders for future CI/CD integration.
-
-8. 🛒 Custom Chatbot UI (E-commerce)
-
-Includes:
-
-Chat interface
-
-Order-tracking intent
-
-Product suggestion intents
-
-Fallback handling
-
-Example conversation:
-
+**Example conversation:**
+```
 You: show me laptops  
 Bot: Here are trending laptops right now...
+```
 
-Project Workflow
-Login → Workspace Selection → Annotation Page → Train Models →
-Active Learning → Admin Dashboard → Deployment → Chatbot UI
+---
 
-Project Structure
+## 🔄 Project Workflow
+
+```mermaid
+graph LR
+    A[🔐 Login] --> B[🗂️ Workspace Selection]
+    B --> C[✍️ Annotation Page]
+    C --> D[🏋️ Train Models]
+    D --> E[🔁 Active Learning]
+    E --> F[🛠️ Admin Dashboard]
+    F --> G[🚀 Deployment]
+    G --> H[💬 Chatbot UI]
+```
+
+---
+
+## 📁 Project Structure
+
+```
 project/
-│── backend/
+├── 🔧 backend/
 │   ├── app.py
 │   ├── auth/
 │   │   └── jwt_utils.py
@@ -217,7 +205,7 @@ project/
 │   └── data/
 │       └── uncertain_samples.json
 │
-│── frontend/
+├── 🎨 frontend/
 │   ├── templates/
 │   │   ├── auth.html
 │   │   ├── workspace.html
@@ -229,66 +217,124 @@ project/
 │   ├── static/css/
 │   └── chatbot-ui/
 │
-│── models/
+├── 🤖 models/
 │   ├── metadata/
 │   ├── spacy_models/
 │   └── rasa_models/
 │
-├── README.md
-└── requirements.txt
+├── 📄 README.md
+└── 📋 requirements.txt
+```
 
-Installation
-1. Clone Repo
-git clone https://github.com/<your-repo>.git
-cd project
+---
 
-2. Create Virtual Environment
+## 🚀 Installation
+
+### Prerequisites
+
+- Python 3.8+
+- pip
+- Virtual environment (recommended)
+
+### Setup Steps
+
+#### 1️⃣ Clone Repository
+```bash
+git clone https://github.com/n1hal06/Annotation-and-ChatBot-Training-.git
+cd Annotation-and-ChatBot-Training-
+```
+
+#### 2️⃣ Create Virtual Environment
+```bash
+# macOS/Linux
 python -m venv venv
-source venv/bin/activate   # macOS/Linux
-venv\Scripts\activate      # Windows
+source venv/bin/activate
 
-3. Install Dependencies
+# Windows
+python -m venv venv
+venv\Scripts\activate
+```
+
+#### 3️⃣ Install Dependencies
+```bash
 pip install -r requirements.txt
+```
 
-4. Start Backend
-python backend/app.py
+#### 4️⃣ Start Backend
+```bash
+python nlu-annotation-tool/backend/app.py
+```
 
-5. Open Frontend
+#### 5️⃣ Access Frontend
 
-Open frontend/index.html or use Live Server.
+Open your browser and navigate to:
+```
+http://localhost:5000
+```
 
-API Endpoints
-Authentication
-POST /api/auth/register
-POST /api/auth/login
-GET /api/auth/users
+Or use a Live Server extension for development.
 
-Annotation
-POST /api/annotations
-GET /api/annotations?workspace_id=
+---
 
-Model Training
-POST /api/train   { "backend": "spacy" | "rasa" }
+## 🔌 API Endpoints
 
-Active Learning
-GET /api/active_learning/uncertain_samples
-POST /api/active_learning/retrain
+### 🔐 Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | User login |
+| GET | `/api/auth/users` | List all users |
 
-Admin
-GET /api/admin/stats
-GET /api/admin/users
-GET /api/admin/model_health
+### ✍️ Annotation
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/annotations` | Save new annotation |
+| GET | `/api/annotations?workspace_id=` | Get workspace annotations |
 
-Future Enhancements
+### 🤖 Model Training
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/train` | Train model (`{"backend": "spacy" \| "rasa"}`) |
 
-Live deployment to Docker Hub + Render
+### 🔁 Active Learning
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/active_learning/uncertain_samples` | Get uncertain predictions |
+| POST | `/api/active_learning/retrain` | Retrain with corrected samples |
 
-Real-time chatbot model switching
+### 🛠️ Admin
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/stats` | Get workspace statistics |
+| GET | `/api/admin/users` | Get user list |
+| GET | `/api/admin/model_health` | Get model health metrics |
 
-Automatic confidence threshold tuning
+---
 
-Multi-user collaboration inside workspace
+## 🔮 Future Enhancements
 
-License
+- [ ] 🐳 Live deployment to Docker Hub + Render
+- [ ] 🔄 Real-time chatbot model switching
+- [ ] 🎯 Automatic confidence threshold tuning
+- [ ] 👥 Multi-user collaboration inside workspace
+- [ ] 📊 Advanced analytics and visualizations
+- [ ] 🌐 Multi-language support
+- [ ] 🔗 Integration with popular messaging platforms
 
-This project is licensed under the MIT License.
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the NLU Community**
+
+⭐ Star this repo if you find it useful!
+
+[Report Bug](https://github.com/n1hal06/Annotation-and-ChatBot-Training-/issues) • [Request Feature](https://github.com/n1hal06/Annotation-and-ChatBot-Training-/issues)
+
+</div>
