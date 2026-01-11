@@ -57,9 +57,6 @@ A production-ready platform that combines **Flask**, **Rasa NLU**, and **spaCy**
 ---
 
 ## ✨ Features
----
-
-## ✨ Features
 
 ### 1. 🔐 Authentication (JWT-Based)
 
@@ -187,42 +184,47 @@ graph LR
 ## 📁 Project Structure
 
 ```
-project/
-├── 🔧 backend/
-│   ├── app.py
-│   ├── auth/
-│   │   └── jwt_utils.py
-│   ├── api/
-│   │   ├── auth_api.py
-│   │   ├── workspace_api.py
-│   │   ├── models_api.py
-│   │   ├── train_api.py
-│   │   └── admin_api.py
-│   ├── utils/
-│   │   ├── model_utils.py
-│   │   ├── tokenizer.py
-│   │   └── active_learning.py
-│   └── data/
-│       └── uncertain_samples.json
-│
-├── 🎨 frontend/
-│   ├── templates/
+Annotation-and-ChatBot-Training-/
+├── 🛠️ nlu-annotation-tool/
+│   ├── 🔧 backend/
+│   │   ├── app.py
+│   │   ├── auth/
+│   │   │   └── jwt_utils.py
+│   │   ├── api_blueprints/
+│   │   │   ├── auth_api.py
+│   │   │   ├── workspace_api.py
+│   │   │   ├── models_api.py
+│   │   │   ├── train_api.py
+│   │   │   └── admin_api.py
+│   │   ├── utils/
+│   │   │   ├── model_utils.py
+│   │   │   ├── tokenizer.py
+│   │   │   └── active_learning.py
+│   │   ├── data/
+│   │   │   └── uncertain_samples.json
+│   │   └── workspaces/
+│   │
+│   ├── 🎨 frontend/
 │   │   ├── auth.html
 │   │   ├── workspace.html
-│   │   ├── annotation.html
+│   │   ├── landing.html
 │   │   ├── active_learning.html
 │   │   ├── admin_dashboard.html
-│   │   └── deployment.html
-│   ├── static/js/
-│   ├── static/css/
-│   └── chatbot-ui/
+│   │   ├── deployment.html
+│   │   └── style.css
+│   │
+│   ├── data/
+│   │   └── nlu.yml
+│   └── requirements.txt
 │
 ├── 🤖 models/
 │   ├── metadata/
 │   ├── spacy_models/
 │   └── rasa_models/
 │
-├── 📄 README.md
+├── 📄 domain.yml
+├── 📄 config.yml
+├── 📝 README.md
 └── 📋 requirements.txt
 ```
 
