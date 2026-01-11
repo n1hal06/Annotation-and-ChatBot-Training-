@@ -55,7 +55,7 @@ An **end-to-end NLU Training Platform** combined with a **Rasa-powered Chatbot**
    - Fallback handling
 
 ### 9. **Deployment Pipeline Visualization**
-   - Visual CI/CD workflow
+   - Visual Continuous Integration/Continuous Deployment (CI/CD) workflow
    - Docker, Container Registry, Cloud Deploy stages
    - Framework for future automation
 
@@ -83,7 +83,7 @@ An **end-to-end NLU Training Platform** combined with a **Rasa-powered Chatbot**
 
 ## 🎓 Perfect For
 
-- NLU/NLP learning and experimentation
+- Natural Language Understanding (NLU) / Natural Language Processing (NLP) learning and experimentation
 - Chatbot development workflows
 - Active learning implementation
 - Multi-project management
